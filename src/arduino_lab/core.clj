@@ -1,4 +1,5 @@
 (ns arduino-lab.core
+  "Blinking sos led."
   (:use :reload-all clodiuno.core)
   (:use :reload-all clodiuno.firmata))
 
