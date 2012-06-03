@@ -7,8 +7,8 @@
 (def long-pulse 500)
 (def letter-delay 1000)
 
-(def letter-s [0 0 0])
-(def letter-o [1 1 1])
+(def letters {:s  [0 0 0]
+              :o  [1 1 1]})
 
 (defn blink "Given a board and time, make the led blink"
   [board time]
@@ -34,9 +34,9 @@
 (defn sos "The main algorithm to make the led from the board light the sos"
   [board]
   (doseq [_ (range 3)]
-    (blink-letter board letter-s)
-    (blink-letter board letter-o)
-    (blink-letter board letter-s)))
+    (blink-letter board (:s letters))
+    (blink-letter board (:o letters))
+    (blink-letter board (:s letters))))
 
 (defn main
   "Given a serial device entry, open the board, make it do some sos light and then close the board"
