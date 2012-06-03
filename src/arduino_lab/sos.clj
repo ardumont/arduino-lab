@@ -1,4 +1,4 @@
-(ns arduino-lab.core
+(ns arduino-lab.sos
   "Blinking sos led."
   (:use :reload-all clodiuno.core)
   (:use :reload-all clodiuno.firmata))
@@ -45,6 +45,7 @@
     ;;allow arduino to boot
     (Thread/sleep 5000)
     (pin-mode board 13 OUTPUT)
+
     (sos board)
 
     (close board)))
