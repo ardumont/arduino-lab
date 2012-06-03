@@ -1,13 +1,13 @@
 # arduino-lab
 
-FIXME: write description
+Mess around with arduino from the comfort of the clojure repl
 
 ## Usage
 
-FIXME: write
+My personal usage - but could be an example on how to setup clodiuno as this was kind of messy for me.
 
 ## License
 
-Copyright (C) 2012 FIXME
+Copyright (C) 2012 commiters
 
 Distributed under the Eclipse Public License, the same as Clojure.
