@@ -25,12 +25,6 @@
       (blink board long-pulse)))
   (Thread/sleep letter-delay))
 
-(comment "For the repl"
-  (def board (arduino :firmata "/dev/ttyS42"))
-  (pin-mode board 13 OUTPUT)
-  (digital-write board 13 HIGH)
-  (digital-write board 13 LOW))
-
 (defn sos "The main algorithm to make the led from the board light the sos"
   [board]
   (doseq [_ (range 3)]
@@ -49,3 +43,11 @@
     (sos board)
 
     (close board)))
+
+(comment "For the repl"
+  (def board (arduino :firmata "/dev/ttyS42"))
+  (pin-mode board 13 OUTPUT)
+  (digital-write board 13 HIGH)
+  (digital-write board 13 LOW)
+  (sos board)
+  (close board))

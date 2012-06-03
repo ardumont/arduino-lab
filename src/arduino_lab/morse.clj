@@ -80,3 +80,9 @@
     (morse board "hello world")
 
     (close board)))
+
+(comment "For the repl"
+  (def board (arduino :firmata "/dev/ttyS42"))
+  (pin-mode board 13 OUTPUT)
+  (morse board "hello world")
+  (close board))
