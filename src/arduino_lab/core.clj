@@ -10,28 +10,35 @@
 (def letter-s [0 0 0])
 (def letter-o [1 1 1])
 
-(defn blink [board time]
+(defn blink "Given a board and time, make the led blink"
+  [board time]
   (digital-write board 13 HIGH)
   (Thread/sleep time)
   (digital-write board 13 LOW)
   (Thread/sleep time))
 
-(defn blink-letter [board letter]
+(defn blink-letter
+  [board letter]
   (doseq [i letter]
     (if (= i 0)
       (blink board short-pulse)
       (blink board long-pulse)))
   (Thread/sleep letter-delay))
 
-(defn sos []
-  (let [board (arduino :firmata "/dev/ttyACM0")]
+(defn sos "The main algorithm to make the led from the board light the sos"
+  [board]
+  (doseq [_ (range 3)]
+    (blink-letter board letter-s)
+    (blink-letter board letter-o)
+    (blink-letter board letter-s)))
+
+(defn main
+  "Given a serial device entry, open the board, make it do some sos light and then close the board"
+  [board-serial-port]
+  (let [board (arduino :firmata board-serial-port)]
     ;;allow arduino to boot
     (Thread/sleep 5000)
     (pin-mode board 13 OUTPUT)
-
-    (doseq [_ (range 3)]
-      (blink-letter board letter-s)
-      (blink-letter board letter-o)
-      (blink-letter board letter-s))
+    (sos board)
 
     (close board)))
