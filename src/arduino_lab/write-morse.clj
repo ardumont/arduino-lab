@@ -71,6 +71,6 @@
   "for the repl - one shot"
   (def device-board "/dev/ttyACM0")
   (System/setProperty "gnu.io.rxtx.SerialPorts" device-board)
-  (main-write-morse "device-board" hello world))
+  (main-write-morse device-board hello world))
 
 
