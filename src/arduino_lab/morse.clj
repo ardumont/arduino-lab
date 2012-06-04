@@ -34,8 +34,8 @@
               \z [1 1 0 0]})
 
 ;; time
-(def short-pulse 250)
-(def long-pulse 500)
+(def short-pulse 100)
+(def long-pulse 250)
 (def letter-delay 1000)
 
 ;; pin number
