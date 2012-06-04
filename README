@@ -5,8 +5,7 @@ Mess around with arduino from the comfort of the clojure repl
 ## Usage
 
 My personal usage.
-Could be an example on how to setup clodiuno as this was kind of messy for me but was worth it :D
-http://adumont.fr/blog/my-first-steps-with-arduinoclodiuno
+Could be an example on how to setup clodiuno as this was [[http://adumont.fr/blog/my-first-steps-with-arduinoclodiuno][kind of messy for me]]. This was worth it :D
 
 ## License
 
