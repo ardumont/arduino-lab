@@ -6,6 +6,8 @@
   (:require [arduino-lab.morse :as m]
             [clojure.string :as s]))
 
+;; circuit: Just a led on the 13 pin.
+
 ;; time
 (def short-pulse 100)
 (def long-pulse 250)
