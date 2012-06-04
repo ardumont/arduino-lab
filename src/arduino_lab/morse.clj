@@ -89,6 +89,7 @@
   board
   (pin-mode board 13 OUTPUT)
   (morse board "hello world")
+  (morse board "sos")
   (close board))
 
 (comment
