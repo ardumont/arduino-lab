@@ -36,21 +36,23 @@
 ;; time
 (def short-pulse 100)
 (def long-pulse 250)
-(def letter-delay 1000)
+(def letter-delay 500)
 
 ;; pin number
 (def pin-number 13)
 
 ;; functions
 
-(defn blink "Given a board and time, make the led blink"
+(defn blink
+  "Given a board and time, make the led blink a given time"
   [board time]
   (digital-write board pin-number HIGH)
   (Thread/sleep time)
   (digital-write board pin-number LOW)
   (Thread/sleep time))
 
-(defn blink-letter "Given a letter, blink accordingly 1 is a long pulse, 0 a short one."
+(defn blink-letter
+  "Given a letter, blink according to the sequence of 0 (short pulse) and 1 (long pulse)"
   [board letter]
   (doseq [i letter]
     (if (= i 0)
@@ -58,33 +60,39 @@
       (blink board long-pulse)))
   (Thread/sleep letter-delay))
 
-(comment "For the repl"
-  (def board (arduino :firmata "/dev/ttyS42"))
-  (pin-mode      board pin-number OUTPUT)
-  (digital-write board pin-number HIGH)
-  (digital-write board pin-number LOW))
-
-(defn morse "Given a word, make the led blink in morse (no upper case, no punctuation)"
+(defn morse
+  "Given a word, make the led blink in morse for each letter (no upper case, no punctuation)"
   [board word]
   (doseq [l word]
     (blink-letter board (letters l))))
 
-(defn main
-  "Given a serial device entry, open the board, make it do some sos light and then close the board"
-  [board-serial-port]
+(defn main-morse
+  "Given a serial device entry:
+   - open the board
+   - make the led blink in morse the word word
+   - then close the board"
+  [board-serial-port word]
   (let [board (arduino :firmata board-serial-port)]
     ;;allow arduino to boot
     (Thread/sleep 5000)
     (pin-mode board pin-number OUTPUT)
 
-    (morse board "hello world")
+    (morse board word)
 
     (close board)))
 
-(comment "For the repl"
-         (System/setProperty "gnu.io.rxtx.SerialPorts" "/dev/ttyACM0")
-         (def board (arduino :firmata "/dev/ttyACM0"))
-         board
-         (pin-mode board 13 OUTPUT)
-         (morse board "hello world")
-         (close board))
+(comment
+  "For the repl - step by step"
+  (def device-board "/dev/ttyACM0")
+  (System/setProperty "gnu.io.rxtx.SerialPorts" device-board)
+  (def board (arduino :firmata device-board))
+  board
+  (pin-mode board 13 OUTPUT)
+  (morse board "hello world")
+  (close board))
+
+(comment
+  "for the repl - one shot"
+  (def device-board "/dev/ttyACM0")
+  (System/setProperty "gnu.io.rxtx.SerialPorts" device-board)
+  (main-morse "device-board" hello world))
