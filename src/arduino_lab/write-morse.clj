@@ -33,13 +33,13 @@
       (blink board long-pulse)))
   (Thread/sleep letter-delay))
 
-(defn morse
+(defn write-morse
   "Given a word, make the led blink in morse for each letter (no upper case, no punctuation)"
   [board word]
   (doseq [l word]
     (blink-letter board (m/letters-2-bits l))))
 
-(defn main-morse
+(defn main-write-morse
   "Given a serial device entry:
    - open the board
    - make the led blink in morse the word word
@@ -50,7 +50,7 @@
     (Thread/sleep 5000)
     (pin-mode board pin-number OUTPUT)
 
-    (morse board word)
+    (write-morse board word)
 
     (close board)))
 
@@ -61,14 +61,14 @@
   (def board (arduino :firmata device-board))
   board
   (pin-mode board 13 OUTPUT)
-  (morse board "hello world")
-  (morse board "sos")
+  (write-morse board "hello world")
+  (write-morse board "sos")
   (close board))
 
 (comment
   "for the repl - one shot"
   (def device-board "/dev/ttyACM0")
   (System/setProperty "gnu.io.rxtx.SerialPorts" device-board)
-  (main-morse "device-board" hello world))
+  (main-write-morse "device-board" hello world))
 
 
