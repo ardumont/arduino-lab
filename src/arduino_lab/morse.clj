@@ -84,6 +84,7 @@
 (comment "For the repl"
          (System/setProperty "gnu.io.rxtx.SerialPorts" "/dev/ttyACM0")
          (def board (arduino :firmata "/dev/ttyACM0"))
+         board
          (pin-mode board 13 OUTPUT)
          (morse board "hello world")
          (close board))
