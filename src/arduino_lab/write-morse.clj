@@ -14,16 +14,16 @@
 (def letter-delay 500)
 
 ;; pin number
-(def pin-number 13)
+(def pin-led 13)
 
 ;; functions
 
 (defn blink
   "Given a board and time, make the led blink a given time"
   [board time]
-  (digital-write board pin-number HIGH)
+  (digital-write board pin-led HIGH)
   (Thread/sleep time)
-  (digital-write board pin-number LOW)
+  (digital-write board pin-led LOW)
   (Thread/sleep time))
 
 (defn blink-letter
@@ -50,11 +50,17 @@
   (let [board (arduino :firmata board-serial-port)]
     ;;allow arduino to boot
     (Thread/sleep 5000)
-    (pin-mode board pin-number OUTPUT)
+    (pin-mode board pin-led OUTPUT)
 
     (write-morse board word)
 
     (close board)))
+
+(comment
+  "for the repl - one shot"
+  (def device-board "/dev/ttyACM0")
+  (System/setProperty "gnu.io.rxtx.SerialPorts" device-board)
+  (main-write-morse device-board hello world))
 
 (comment
   "For the repl - step by step"
@@ -62,15 +68,10 @@
   (System/setProperty "gnu.io.rxtx.SerialPorts" device-board)
   (def board (arduino :firmata device-board))
   board
-  (pin-mode board 13 OUTPUT)
+  (pin-mode board pin-led OUTPUT)
   (write-morse board "hello world")
   (write-morse board "sos")
   (close board))
 
-(comment
-  "for the repl - one shot"
-  (def device-board "/dev/ttyACM0")
-  (System/setProperty "gnu.io.rxtx.SerialPorts" device-board)
-  (main-write-morse device-board hello world))
 
 
