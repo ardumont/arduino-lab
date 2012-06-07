@@ -25,7 +25,7 @@
 (defn main
   "Given a serial device entry:
    - open the board
-   - launch the listening of the morse code
+   - launch the circuit that permits the led to stay lightened as long as the button is pushed
    - then close the board"
   [board-serial-port]
   (let [board (arduino :firmata board-serial-port)]
