@@ -1,6 +1,6 @@
 (defproject arduino-lab "1.0.0-SNAPSHOT"
   :description "Mess around with arduino from the comfort of the repl"
-  :dependencies [[org.clojure/clojure "1.3.0"]
+  :dependencies [[org.clojure/clojure "1.4.0"]
                  [clodiuno "0.0.3-SNAPSHOT"]
                  [serial-port "1.1.2"]
                  [midje "1.3.1"]]
