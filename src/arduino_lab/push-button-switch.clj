@@ -12,7 +12,6 @@
 (def pin-led    13)
 (def pin-button 7)
 
-(def old-state (atom 0))
 (def state (atom 0))
 
 (defn switch-button
@@ -21,17 +20,15 @@
   (while true
     (let [status-button (digital-read board pin-button)]
       ;; deal with state
-      (if (and (= HIGH status-button) (= LOW @old-state))
+      (if (= HIGH status-button)
         (do
+          ;; change the state
           (swap! state (fn [o] (- 1 o)))
           ;; for stabilisation
           (Thread/sleep 10)))
 
-      ;; keep the old state
-      (swap! old-state (fn [o] @state))
-
       ;; let the light be... or not
-      (digital-write board pin-led state))))
+      (digital-write board pin-led @state))))
 
 (defn main
   "Given a serial device entry:
@@ -69,6 +66,7 @@
   (pin-mode board pin-button INPUT)
 
   (switch-button board)
+
   (close board))
 
 (comment
