@@ -13,6 +13,7 @@
 (def pin-button 7)
 
 (def state (atom 0))
+(def old-state (atom 0))
 
 (defn switch-button
   "Given a board, read from the button"
@@ -20,12 +21,14 @@
   (while true
     (let [status-button (digital-read board pin-button)]
       ;; deal with state
-      (if (= HIGH status-button)
+      (if (and (= HIGH status-button) (not= @old-state (- 1 @state)))
         (do
           ;; change the state
           (swap! state (fn [o] (- 1 o)))
           ;; for stabilisation
-          (Thread/sleep 10)))
+          (Thread/sleep 100)))
+
+      (swap! old-state (fn [o] @state))
 
       ;; let the light be... or not
       (digital-write board pin-led @state))))
@@ -66,7 +69,6 @@
   (pin-mode board pin-button INPUT)
 
   (switch-button board)
-
   (close board))
 
 (comment
