@@ -45,8 +45,9 @@
 (defn read-morse-word-and-reinit-word
   "Read the word and then init the state for the new word to come"
   [status-button]
-  (let [w (read-morse (:word @state))]
-    (println w)
+  (let [bits (:word @state)
+        w (read-morse bits)]
+    (println "bits" bits " -> " w)
     (swap! words conj w)
     (init-state state status-button)))
 
@@ -69,7 +70,7 @@
           (add-bit state status-button)))
 
       (digital-write board pin-led status-button)
-      (Thread/sleep 10))))
+      (Thread/sleep 250))))
 
 (defn main
   "Given a serial device entry:
@@ -101,7 +102,8 @@
 
 (comment
   "For the repl - step by step"
-  (def device-board "/dev/ttyACM2")
+
+  (def device-board "/dev/ttyACM0")
   (System/setProperty "gnu.io.rxtx.SerialPorts" device-board)
   (def board (arduino :firmata device-board))
   (enable-pin board :digital pin-button)
