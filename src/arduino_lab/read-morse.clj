@@ -14,6 +14,10 @@
 (def pin-led    13)
 (def pin-button 7)
 
+;; duraction of morse signal
+(def dit 50)
+(def dat (* 3 dit))
+
 ;; beyond this threshold, we get a new word
 (def threshold 1000)
 
@@ -38,23 +42,79 @@
 
 (defn init-state
   "Init the current state of the application"
-  [a n]
-  (reset! a {:time (System/currentTimeMillis) ;; the reading time
-            :word  [n]}))
+  ([a]
+     (reset! a {:time (System/currentTimeMillis) ;; the reading time
+                :word  []}))
+  ([a n]
+     (reset! a {:time (System/currentTimeMillis) ;; the reading time
+                :word  [n]})))
 
-(defn read-morse-word-and-reinit-word
-  "Read the word and then init the state for the new word to come"
-  [status-button]
+(fact "init-state - arity 1"
+  (let [a (atom {})]
+    (init-state a) => (contains {:word []})))
+
+(fact "init-state - arity 2"
+  (let [a (atom {})]
+    (init-state a :val) => (contains {:word [:val]})))
+
+(defn compute-signal "Compute the signal as 0 or 1 depending on the status of the button and the duration of the pression"
+  [duration]
+  (cond (<= duration 19) nil
+        (<= 20 duration dit) 0
+        (< dit duration dat) 1
+        :else nil))
+
+(fact "compute-signal"
+  (compute-signal 10) => nil
+  (compute-signal 20) => 0
+  (compute-signal 50) => 0
+  (compute-signal 51) => 1
+  (compute-signal 149) => 1
+  (compute-signal 150) => nil)
+
+(defn read-morse-word
+  "Read the word from the global state and update the global list of words read"
+  [words state]
   (let [bits (:word @state)
         w (read-morse bits)]
     (println "bits" bits " -> " w)
-    (swap! words conj w)
-    (init-state state status-button)))
+    (swap! words conj w)))
+
+(fact
+  (let [a (atom {:word [1 1 1]})
+        w (atom [])]
+    (read-morse-word w a) => ["o"]))
 
 (defn add-bit
-  "Update the state with the new status-button read."
-  [state status-button]
-  (swap! state (fn [o] (update-in o [:word] conj status-button))))
+  "Update the state with the new signal read."
+  [state duration]
+  (if-let [signal (compute-signal duration)]
+    (swap! state (fn [o] (update-in o [:word] conj signal)))))
+
+(fact "add-bit"
+  (let [a (atom {:word []})]
+    (add-bit a 19) => nil
+    (add-bit a 20) => {:word [0]}
+    (add-bit a 20) => {:word [0 0]}
+    (add-bit a 51) => {:word [0 0 1]}))
+
+;; dispatch on the signal send by the button
+(defmulti morse-reading (fn [signal duration] signal))
+
+(defmethod morse-reading HIGH
+  [_ duration]
+  (if (< threshold duration)
+    (do
+      (read-morse-word words state)
+      (init-state state (compute-signal duration)))
+    (add-bit state duration)))
+
+(defmethod morse-reading LOW
+  [_ duration]
+  (when (< threshold duration)
+    (do
+      (read-morse-word words state)
+      (init-state state))))
 
 (defn read-morse-from-button
   "Given a board, read the word the human send with the button"
@@ -63,14 +123,11 @@
     (let [status-button (digital-read board pin-button)]
 
       (let [nt (System/currentTimeMillis)
-            ot (:time @state)]
-
-        (if (< threshold (- nt ot))
-          (read-morse-word-and-reinit-word status-button)
-          (add-bit state status-button)))
+            duration (- nt (:time @state))]
+        (morse-reading status-button duration))
 
       (digital-write board pin-led status-button)
-      (Thread/sleep 250))))
+      (Thread/sleep 10))))
 
 (defn main
   "Given a serial device entry:
@@ -103,7 +160,7 @@
 (comment
   "For the repl - step by step"
 
-  (def device-board "/dev/ttyACM0")
+  (def device-board "/dev/ttyACM2")
   (System/setProperty "gnu.io.rxtx.SerialPorts" device-board)
   (def board (arduino :firmata device-board))
   (enable-pin board :digital pin-button)
@@ -116,6 +173,8 @@
   (digital-write board pin-led LOW)
 
   (read-morse-from-button board (System/currentTimeMillis) 60000)
+
+  words
 
   (close board))
 
