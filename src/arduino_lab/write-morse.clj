@@ -72,6 +72,3 @@
   (write-morse board "hello world")
   (write-morse board "sos")
   (close board))
-
-
-
