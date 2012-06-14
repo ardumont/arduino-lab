@@ -22,18 +22,18 @@
   (digital-write board pin-led LOW)
   (Thread/sleep time))
 
-(defmulti blink-letter-morse "Given a bit, blink the led accordingly in morse" identity)
-(defmethod blink-letter-morse 0 [_] (blink board short-pulse))
-(defmethod blink-letter-morse 1 [_] (blink board long-pulse))
+(defmulti blink-letter-morse "Given a bit, blink the led accordingly in morse" (fn [board bit] bit))
+(defmethod blink-letter-morse 0 [board _] (blink board short-pulse))
+(defmethod blink-letter-morse 1 [board _] (blink board long-pulse))
 
 (defn blink-letter "Given a letter in morse representation, make the led blink accordingly (0 short pulse ; 1 long pulse)"
   [board letter-in-morse]
-  (doseq [i letter-in-morse] (blink-letter-morse i))
+  (doseq [bit letter-in-morse] (blink-letter-morse board bit))
   (Thread/sleep letter-delay))
 
 (defn write-morse "Given a word, make the led blink in morse for each letter (no upper case, no punctuation)"
   [board word]
-  (doseq [l word] (blink-letter board (m/letters-2-bits l))))
+  (doseq [letter word] (blink-letter board (m/letters-2-bits letter))))
 
 (comment "Execution code for the repl - step by step"
   (def device-board "/dev/ttyACM0")
