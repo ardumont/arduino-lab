@@ -27,9 +27,9 @@
   (Thread/sleep time))
 
 (defn blink-letter
-  "Given a letter, blink according to the sequence of 0 (short pulse) and 1 (long pulse)"
-  [board letter]
-  (doseq [i letter]
+  "Given a letter in morse representation, make the led blink accordingly (0 short pulse ; 1 long pulse)"
+  [board letter-in-morse]
+  (doseq [i letter-in-morse]
     (if (= i 0)
       (blink board short-pulse)
       (blink board long-pulse)))
