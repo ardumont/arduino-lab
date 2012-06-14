@@ -3,8 +3,7 @@
   (:use [midje.sweet])
   (:use :reload-all clodiuno.core)
   (:use :reload-all clodiuno.firmata)
-  (:require [arduino-lab.morse :as m]
-            [clojure.string :as s]))
+  (:require [arduino-lab.morse :as m]))
 
 ;; circuit: Just a led on the 13 pin.
 
@@ -15,8 +14,6 @@
 
 ;; pin number
 (def pin-led 13)
-
-;; functions
 
 (defn blink "Given a board and time, make the led blink a given time"
   [board time]
