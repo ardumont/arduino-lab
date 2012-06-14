@@ -41,27 +41,6 @@
   (doseq [l word]
     (blink-letter board (m/letters-2-bits l))))
 
-(defn main-write-morse
-  "Given a serial device entry:
-   - open the board
-   - make the led blink in morse the word word
-   - then close the board"
-  [board-serial-port word]
-  (let [board (arduino :firmata board-serial-port)]
-    ;;allow arduino to boot
-    (Thread/sleep 5000)
-    (pin-mode board pin-led OUTPUT)
-
-    (write-morse board word)
-
-    (close board)))
-
-(comment
-  "for the repl - one shot"
-  (def device-board "/dev/ttyACM0")
-  (System/setProperty "gnu.io.rxtx.SerialPorts" device-board)
-  (main-write-morse device-board "hello world"))
-
 (comment
   "For the repl - step by step"
   (def device-board "/dev/ttyACM0")
