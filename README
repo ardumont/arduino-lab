@@ -1,6 +1,6 @@
 # arduino-lab
 
-Mess around with arduino from the comfort of the clojure repl.
+Mess around with arduino from the confort of the clojure repl.
 
 Examples inspired from:
 - https://github.com/nakkaya/clodiuno
