@@ -4,7 +4,7 @@
 
 ;; 0 represents short signal
 ;; 1 represents long signal
-;; Intermational morse from http://en.wikipedia.org/wiki/Morse_code
+;; International morse from http://en.wikipedia.org/wiki/Morse_code
 (def letters-2-bits {\a [0 1]
                      \b [1 0 0 0]
                      \c [1 0 1 0]
