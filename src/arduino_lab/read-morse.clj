@@ -41,81 +41,110 @@
   (read-morse [0 0 0 0] [0] [0 1 0 0] [0 1 0 0] [1 1 1]) => [\h \e \l \l \o]
   (read-morse [0 0 0 0] [0] [0 1 0 0] [0 1 0 0] [1 1 1] [] [0 0 0] [1 1 1] [0 0 0]) => [\h \e \l \l \o nil \s \o \s])
 
-(defn init-state
+(defn init-new-word
   "Init the current state of the application"
   ([]
-     (reset! *state* {:time (System/currentTimeMillis) ;; the reading time
-                      :word  []}))
+     (swap! *state* (fn [o] {:time (System/currentTimeMillis)
+                            :word  (conj (o :word) [])})))
   ([n]
-     (reset! *state* {:time (System/currentTimeMillis) ;; the reading time
-                      :word  [n]})))
+     (swap! *state* (fn [o] {:time (System/currentTimeMillis)
+                            :word  (conj (o :word) [n])}))))
 
-(fact "init-state - arity 1"
-  (binding [*state* (atom {})]
-    (init-state) => (contains {:word []})))
+(fact
+  (binding [*state* (atom {:word [[:some-previous-val]]})]
+    (init-new-word) => (contains {:word [[:some-previous-val] []]})))
 
-(fact "init-state - arity 2"
-  (let [*state* (atom {})]
-    (init-state :val) => (contains {:word [:val]})))
-
-(defn compute-signal "Compute the signal as 0 or 1 depending on the status of the button and the duration of the pression"
-  [duration]
-  (cond (<= duration 19) nil
-        (<= 20 duration dit) 0
-        (< dit duration dat) 1
-        :else nil))
-
-(fact "compute-signal"
-  (compute-signal 10) => nil
-  (compute-signal 20) => 0
-  (compute-signal 50) => 0
-  (compute-signal 51) => 1
-  (compute-signal 149) => 1
-  (compute-signal 150) => nil)
+(fact
+  (binding [*state* (atom {:word [[:some-previous-val]]})]
+    (init-new-word :val) => (contains {:word [[:some-previous-val] [:val]]})))
 
 (defn read-morse-word
   "Read the word from the global state and update the global list of words read"
   []
   (let [bits (:word @*state*)
         w (apply read-morse bits)]
-    (println "bits" bits " -> " w)
     (swap! *words* conj w)))
 
 (fact
   (binding [*state* (atom {:word [[0 0 0] [1 1 1] [0 0 0]]})
             *words* (atom [])]
-    (read-morse-word) =>  (contains "sos")))
+    (read-morse-word) => [[\s \o \s]]
+    @*words*          => [[\s \o \s]]))
+
+(defn compute-bit "Given a duration, compute the bit as 0 or 1"
+  [duration]
+  (cond (<= duration 19) nil
+        (<= 20 duration dit) 0
+        (< dit duration dat) 1
+        :else nil))
+
+(fact "compute-bit"
+  (compute-bit 10) => nil
+  (compute-bit 20) => 0
+  (compute-bit 50) => 0
+  (compute-bit 51) => 1
+  (compute-bit 149) => 1
+  (compute-bit 150) => nil)
 
 (defn add-bit
-  "Update the state with the new signal read."
+  "Update the state with the newly read signal."
   [duration]
-  (if-let [signal (compute-signal duration)]
-    (swap! *state* update-in [:word] conj signal)))
+  (if-let [signal (compute-bit duration)]
+    (swap! *state* (fn [o]
+                     (let [i (dec (count (:word o)))]
+                       (update-in o [:word i] conj signal))))))
 
 (fact "add-bit"
-  (binding [*state* (atom {:word []})]
+  (binding [*state* (atom {:word [[]]})]
     (add-bit 19) => nil
-    (add-bit 20) => {:word [0]}
-    (add-bit 20) => {:word [0 0]}
-    (add-bit 51) => {:word [0 0 1]}))
+    (add-bit 20) => {:word [[0]]}
+    (add-bit 20) => {:word [[0 0]]}
+    (add-bit 51) => {:word [[0 0 1]]}))
+
+(def morse-reading nil)
+
+(defn beyond-threshold? "Given a duration, compute if the threshold is reached or not."
+  [d]
+  (<= threshold d))
+
+(fact
+  (beyond-threshold? 50) => false
+  (beyond-threshold? 1000) => true)
 
 ;; dispatch on the signal send by the button
-(defmulti morse-reading (fn [signal duration] signal))
+(defmulti morse-reading (fn [signal duration]
+                          [signal (if (beyond-threshold? duration) :new-word :same-word)]))
 
-(defmethod morse-reading HIGH
+(defmethod morse-reading [HIGH :new-word]
   [_ duration]
-  (if (< threshold duration)
-    (do
-      (read-morse-word)
-      (init-state (compute-signal duration)))
-    (add-bit duration)))
+  (if-let [cs (compute-signal (- duration threshold))]
+    (init-new-word cs)
+    (init-new-word)))
 
-(defmethod morse-reading LOW
+(fact "morse-reading - new word"
+  (binding [*state* (atom {:word [[]]})]
+    (morse-reading HIGH 1000) => (contains {:word [[] []]})
+    (morse-reading HIGH 1100) => (contains {:word [[] [] [1]]})
+    (morse-reading HIGH 1030) => (contains {:word [[] [] [1] [0]]})))
+
+(defmethod morse-reading [HIGH :same-word]
   [_ duration]
-  (when (< threshold duration)
-    (do
-      (read-morse-word)
-      (init-state))))
+  (add-bit duration))
+
+(fact "morse-reading - same word"
+  (binding [*state* (atom {:word [[]]})]
+    (morse-reading HIGH 50) => {:word [[0]]}
+    (morse-reading HIGH 50) => {:word [[0 0]]}
+    (morse-reading HIGH 140) => {:word [[0 0 1]]}))
+
+(defmethod morse-reading [LOW :new-word]
+  [_ _]
+  (init-new-word))
+
+(fact "morse-reading - new word"
+  (binding [*state* (atom {:word [[1 1 1]]})]
+    (morse-reading LOW 1000) => (contains {:word [[1 1 1] []]})
+    (morse-reading LOW 1100) => (contains {:word [[1 1 1] [] []]})))
 
 (defn read-morse-from-button
   "Given a board, read the word the human send with the button"
@@ -146,6 +175,8 @@
   (digital-write board pin-led LOW)
 
   (read-morse-from-button board (System/currentTimeMillis) 60000)
+
+  (read-morse-word)
 
   *words*
 
