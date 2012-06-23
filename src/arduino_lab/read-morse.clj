@@ -164,7 +164,7 @@
 (comment
   "For the repl - step by step"
 
-  (def device-board "/dev/ttyACM2")
+  (def device-board "/dev/ttyACM0")
   (System/setProperty "gnu.io.rxtx.SerialPorts" device-board)
   (def board (arduino :firmata device-board))
   (enable-pin board :digital pin-button)
@@ -183,5 +183,3 @@
   *words*
 
   (close board))
-
-
