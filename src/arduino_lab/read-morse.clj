@@ -87,16 +87,16 @@
 
 (defn add-bit
   "Update the state with the new signal read."
-  [*state* duration]
+  [duration]
   (if-let [signal (compute-signal duration)]
-    (swap! *state* (fn [o] (update-in o [:word] conj signal)))))
+    (swap! *state* update-in [:word] conj signal)))
 
 (fact "add-bit"
-  (let [a (atom {:word []})]
-    (add-bit a 19) => nil
-    (add-bit a 20) => {:word [0]}
-    (add-bit a 20) => {:word [0 0]}
-    (add-bit a 51) => {:word [0 0 1]}))
+  (binding [*state* (atom {:word []})]
+    (add-bit 19) => nil
+    (add-bit 20) => {:word [0]}
+    (add-bit 20) => {:word [0 0]}
+    (add-bit 51) => {:word [0 0 1]}))
 
 ;; dispatch on the signal send by the button
 (defmulti morse-reading (fn [signal duration] signal))
@@ -105,16 +105,16 @@
   [_ duration]
   (if (< threshold duration)
     (do
-      (read-morse-word *words* *state*)
-      (init-state *state* (compute-signal duration)))
-    (add-bit *state* duration)))
+      (read-morse-word)
+      (init-state (compute-signal duration)))
+    (add-bit duration)))
 
 (defmethod morse-reading LOW
   [_ duration]
   (when (< threshold duration)
     (do
-      (read-morse-word *words* *state*)
-      (init-state *state*))))
+      (read-morse-word)
+      (init-state))))
 
 (defn read-morse-from-button
   "Given a board, read the word the human send with the button"
