@@ -24,12 +24,12 @@
 ;; the state of the application to keep:
 ;; - the word that is been built
 ;; - the last time  we added a bit
-(def state (atom
-            {:time (System/currentTimeMillis) ;; the reading time
-             :word []}))                      ;; the current word that is been read
+(def ^:dynamic *state* (atom
+                        {:time (System/currentTimeMillis) ;; the reading time
+                         :word []}))                      ;; the current word that is been read
 
 ;; the words that has been read
-(def words (atom []))
+(def ^:dynamic *words* (atom []))
 
 (defn read-morse
   "Given a suite of bits, return the words"
@@ -42,20 +42,20 @@
 
 (defn init-state
   "Init the current state of the application"
-  ([a]
-     (reset! a {:time (System/currentTimeMillis) ;; the reading time
-                :word  []}))
-  ([a n]
-     (reset! a {:time (System/currentTimeMillis) ;; the reading time
-                :word  [n]})))
+  ([]
+     (reset! *state* {:time (System/currentTimeMillis) ;; the reading time
+                      :word  []}))
+  ([n]
+     (reset! *state* {:time (System/currentTimeMillis) ;; the reading time
+                      :word  [n]})))
 
 (fact "init-state - arity 1"
-  (let [a (atom {})]
-    (init-state a) => (contains {:word []})))
+  (binding [*state* (atom {})]
+    (init-state) => (contains {:word []})))
 
 (fact "init-state - arity 2"
-  (let [a (atom {})]
-    (init-state a :val) => (contains {:word [:val]})))
+  (let [*state* (atom {})]
+    (init-state :val) => (contains {:word [:val]})))
 
 (defn compute-signal "Compute the signal as 0 or 1 depending on the status of the button and the duration of the pression"
   [duration]
@@ -74,22 +74,22 @@
 
 (defn read-morse-word
   "Read the word from the global state and update the global list of words read"
-  [words state]
-  (let [bits (:word @state)
-        w (read-morse bits)]
+  []
+  (let [bits (:word @*state*)
+        w (apply read-morse bits)]
     (println "bits" bits " -> " w)
-    (swap! words conj w)))
+    (swap! *words* conj w)))
 
 (fact
-  (let [a (atom {:word [1 1 1]})
-        w (atom [])]
-    (read-morse-word w a) => ["o"]))
+  (binding [*state* (atom {:word [[0 0 0] [1 1 1] [0 0 0]]})
+            *words* (atom [])]
+    (read-morse-word) =>  (contains "sos")))
 
 (defn add-bit
   "Update the state with the new signal read."
-  [state duration]
+  [*state* duration]
   (if-let [signal (compute-signal duration)]
-    (swap! state (fn [o] (update-in o [:word] conj signal)))))
+    (swap! *state* (fn [o] (update-in o [:word] conj signal)))))
 
 (fact "add-bit"
   (let [a (atom {:word []})]
@@ -105,16 +105,16 @@
   [_ duration]
   (if (< threshold duration)
     (do
-      (read-morse-word words state)
-      (init-state state (compute-signal duration)))
-    (add-bit state duration)))
+      (read-morse-word *words* *state*)
+      (init-state *state* (compute-signal duration)))
+    (add-bit *state* duration)))
 
 (defmethod morse-reading LOW
   [_ duration]
   (when (< threshold duration)
     (do
-      (read-morse-word words state)
-      (init-state state))))
+      (read-morse-word *words* *state*)
+      (init-state *state*))))
 
 (defn read-morse-from-button
   "Given a board, read the word the human send with the button"
@@ -123,7 +123,7 @@
     (let [status-button (digital-read board pin-button)]
 
       (let [nt (System/currentTimeMillis)
-            duration (- nt (:time @state))]
+            duration (- nt (:time @*state*))]
         (morse-reading status-button duration))
 
       (digital-write board pin-led status-button)
@@ -153,7 +153,7 @@
     (read-morse-from-button board (System/currentTimeMillis) 60000)
 
     ;; display the read words
-    (clojure.pprint/pprint words)
+    (clojure.pprint/pprint *words*)
 
     (close board)))
 
@@ -174,7 +174,7 @@
 
   (read-morse-from-button board (System/currentTimeMillis) 60000)
 
-  words
+  *words*
 
   (close board))
 
