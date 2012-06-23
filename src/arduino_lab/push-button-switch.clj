@@ -15,20 +15,28 @@
 (def state (atom 0))
 (def old-state (atom 0))
 
+(defn rev "Reverse the state"
+  [cv]
+  (- 1 cv))
+
+(fact
+  (rev 0) => 1
+  (rev 1) => 0)
+
 (defn switch-button
   "Given a board, read from the button"
   [board]
   (while true
     (let [status-button (digital-read board pin-button)]
       ;; deal with state
-      (if (and (= HIGH status-button) (not= @old-state (- 1 @state)))
+      (if (and (= HIGH status-button) (not= @old-state (rev @state)))
         (do
-          ;; change the state
-          (swap! state (fn [o] (- 1 o)))
+          ;; reverse the current state
+          (swap! state rev)
           ;; for stabilisation
           (Thread/sleep 100)))
 
-      (swap! old-state (fn [o] @state))
+      (reset! old-state @state)
 
       ;; let the light be... or not
       (digital-write board pin-led @state))))
