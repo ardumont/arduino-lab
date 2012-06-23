@@ -34,11 +34,12 @@
 (defn read-morse
   "Given a suite of bits, return the words"
   [& b]
-  (s/join "" (map m/bits-2-letters b)))
+  (map m/bits-2-letters b))
 
 (fact "read-morse"
-  (read-morse [0 0 0] [1 1 1] [0 0 0]) => "sos"
-  (read-morse [0 0 0 0] [0] [0 1 0 0] [0 1 0 0] [1 1 1]) => "hello")
+  (read-morse [0 0 0] [1 1 1] [0 0 0]) => [\s \o \s]
+  (read-morse [0 0 0 0] [0] [0 1 0 0] [0 1 0 0] [1 1 1]) => [\h \e \l \l \o]
+  (read-morse [0 0 0 0] [0] [0 1 0 0] [0 1 0 0] [1 1 1] [] [0 0 0] [1 1 1] [0 0 0]) => [\h \e \l \l \o nil \s \o \s])
 
 (defn init-state
   "Init the current state of the application"
