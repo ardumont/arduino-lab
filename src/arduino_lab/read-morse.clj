@@ -115,6 +115,8 @@
 (defmulti morse-reading (fn [signal duration]
                           [signal (if (beyond-threshold? duration) :new-word :same-word)]))
 
+(defmethod morse-reading [LOW :same-word])
+
 (defmethod morse-reading [HIGH :new-word]
   [_ duration]
   (if-let [cs (compute-signal (- duration threshold))]
