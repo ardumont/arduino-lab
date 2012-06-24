@@ -19,7 +19,7 @@
 (def dat (* 3 dit))
 
 ;; beyond this threshold, we get a new word
-(def threshold 1000)
+(def threshold (* 2 dat))
 
 ;; the state of the application to keep:
 ;; - the word that is been built
@@ -131,9 +131,9 @@
 
 (fact "morse-reading - new word"
   (binding [*state* (atom {:word [[]]})]
-    (morse-reading HIGH 1000) => (contains {:word [[] []]})
-    (morse-reading HIGH 1100) => (contains {:word [[] [] [1]]})
-    (morse-reading HIGH 1030) => (contains {:word [[] [] [1] [0]]})))
+    (morse-reading HIGH threshold) => (contains {:word [[] []]})
+    (morse-reading HIGH (+ threshold dit)) => (contains {:word [[] [] [0]]})
+    (morse-reading HIGH (+ threshold (dec dat))) => (contains {:word [[] [] [0] [1]]})))
 
 (defmethod morse-reading [HIGH :same-word]
   [_ duration]
