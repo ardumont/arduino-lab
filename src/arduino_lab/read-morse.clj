@@ -113,7 +113,7 @@
 
 (defmethod morse-reading [HIGH :new-word]
   [_ duration]
-  (if-let [cs (compute-signal (- duration threshold))]
+  (if-let [cs (compute-bit (- duration threshold))]
     (init-new-word cs)
     (init-new-word)))
 
