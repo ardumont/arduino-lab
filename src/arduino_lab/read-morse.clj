@@ -78,18 +78,16 @@
 
 (defn compute-bit "Given a duration, compute the bit as 0 or 1"
   [duration]
-  (cond (<= duration 19) nil
-        (<= 20 duration dit) 0
-        (< dit duration dat) 1
-        :else nil))
+  (cond (< duration dit)                  nil
+        (<= dit duration (dec dat))       0
+        (<= dat duration (dec threshold)) 1))
 
 (fact "compute-bit"
-  (compute-bit 10) => nil
-  (compute-bit 20) => 0
-  (compute-bit 50) => 0
-  (compute-bit 51) => 1
-  (compute-bit 149) => 1
-  (compute-bit 150) => nil)
+  (compute-bit (dec dit)) => nil
+  (compute-bit dit) => 0
+  (compute-bit (dec dat)) => 0
+  (compute-bit dat) => 1
+  (compute-bit (dec threshold)) => 1)
 
 (defn add-bit
   "Update the state with the newly read signal."
@@ -101,20 +99,22 @@
 
 (fact "add-bit"
   (binding [*state* (atom {:word [[]]})]
-    (add-bit 19) => nil
-    (add-bit 20) => {:word [[0]]}
-    (add-bit 20) => {:word [[0 0]]}
-    (add-bit 51) => {:word [[0 0 1]]}))
+    (add-bit (dec dit))       => nil
+    (add-bit dit)             => {:word [[0]]}
+    (add-bit (dec dat))       => {:word [[0 0]]}
+    (add-bit dat)             => {:word [[0 0 1]]}
+    (add-bit (dec threshold)) => {:word [[0 0 1 1]]}))
 
-(def morse-reading nil)
+(def morse-reading nil);; hack for the multi-method definition to be recomputed each time changes occur
 
 (defn beyond-threshold? "Given a duration, compute if the threshold is reached or not."
   [d]
   (<= threshold d))
 
-(fact
-  (beyond-threshold? 50) => false
-  (beyond-threshold? 1000) => true)
+(fact "beyond-threshold"
+  (beyond-threshold? dit) => false
+  (beyond-threshold? dat) => false
+  (beyond-threshold? threshold) => true)
 
 ;; dispatch on the signal send by the button
 (defmulti morse-reading (fn [signal duration]
@@ -133,7 +133,7 @@
   (binding [*state* (atom {:word [[]]})]
     (morse-reading HIGH threshold) => (contains {:word [[] []]})
     (morse-reading HIGH (+ threshold dit)) => (contains {:word [[] [] [0]]})
-    (morse-reading HIGH (+ threshold (dec dat))) => (contains {:word [[] [] [0] [1]]})))
+    (morse-reading HIGH (+ threshold dat)) => (contains {:word [[] [] [0] [1]]})))
 
 (defmethod morse-reading [HIGH :same-word]
   [_ duration]
@@ -141,9 +141,9 @@
 
 (fact "morse-reading - same word"
   (binding [*state* (atom {:word [[]]})]
-    (morse-reading HIGH 50) => {:word [[0]]}
-    (morse-reading HIGH 50) => {:word [[0 0]]}
-    (morse-reading HIGH 140) => {:word [[0 0 1]]}))
+    (morse-reading HIGH dit) => {:word [[0]]}
+    (morse-reading HIGH dit) => {:word [[0 0]]}
+    (morse-reading HIGH dat) => {:word [[0 0 1]]}))
 
 (defmethod morse-reading [LOW :new-word]
   [_ _]
