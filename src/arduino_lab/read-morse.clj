@@ -180,6 +180,7 @@
   (digital-write board pin-led HIGH)
   (digital-write board pin-led LOW)
 
+  (init-state)
   (read-morse-from-button board (System/currentTimeMillis) 60000)
 
   (p/pprint (read-morse-word))
