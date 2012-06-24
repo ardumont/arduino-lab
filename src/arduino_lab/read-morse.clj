@@ -117,9 +117,11 @@
 
 ;; dispatch on the signal send by the button
 (defmulti morse-reading (fn [signal duration]
+                          (println signal duration)
                           [signal (if (beyond-threshold? duration) :new-word :same-word)]))
 
-(defmethod morse-reading [LOW :same-word])
+(defmethod morse-reading [LOW :same-word]
+  [_ _])
 
 (defmethod morse-reading [HIGH :new-word]
   [_ duration]
