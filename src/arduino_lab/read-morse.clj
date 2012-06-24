@@ -28,9 +28,6 @@
                         {:time (System/currentTimeMillis) ;; the reading time
                          :word []}))                      ;; the current word that is been read
 
-;; the words that has been read
-(def ^:dynamic *words* (atom []))
-
 (defn read-morse
   "Given a suite of bits, return the words"
   [& b]
@@ -61,15 +58,12 @@
 (defn read-morse-word
   "Read the word from the global state and update the global list of words read"
   []
-  (let [bits (:word @*state*)
-        w (apply read-morse bits)]
-    (swap! *words* conj w)))
+  (let [bits (:word @*state*)]
+    (apply read-morse bits)))
 
 (fact
-  (binding [*state* (atom {:word [[0 0 0] [1 1 1] [0 0 0]]})
-            *words* (atom [])]
-    (read-morse-word) => [[\s \o \s]]
-    @*words*          => [[\s \o \s]]))
+  (binding [*state* (atom {:word [[0 0 0] [1 1 1] [0 0 0]]})]
+    (read-morse-word) => [\s \o \s]))
 
 (defn compute-bit "Given a duration, compute the bit as 0 or 1"
   [duration]
@@ -178,8 +172,6 @@
 
   (read-morse-from-button board (System/currentTimeMillis) 60000)
 
-  (read-morse-word)
-
-  *words*
+  (p/pprint (read-morse-word))
 
   (close board))
