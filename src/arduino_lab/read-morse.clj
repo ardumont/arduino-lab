@@ -15,8 +15,8 @@
 (def pin-button 7)
 
 ;; duration of morse signal
-(def dit 50)
-(def dat (* 3 dit))
+(def dot 50)
+(def dat (* 3 dot))
 
 ;; beyond this threshold, we get a new word
 (def threshold (* 2 dat))
@@ -78,13 +78,13 @@
 
 (defn compute-bit "Given a duration, compute the bit as 0 or 1"
   [duration]
-  (cond (< duration dit)                  nil
-        (<= dit duration (dec dat))       0
+  (cond (< duration dot)                  nil
+        (<= dot duration (dec dat))       0
         (<= dat duration (dec threshold)) 1))
 
 (fact "compute-bit"
-  (compute-bit (dec dit)) => nil
-  (compute-bit dit) => 0
+  (compute-bit (dec dot)) => nil
+  (compute-bit dot) => 0
   (compute-bit (dec dat)) => 0
   (compute-bit dat) => 1
   (compute-bit (dec threshold)) => 1)
@@ -99,8 +99,8 @@
 
 (fact "add-bit"
   (binding [*state* (atom {:word [[]]})]
-    (add-bit (dec dit))       => nil
-    (add-bit dit)             => {:word [[0]]}
+    (add-bit (dec dot))       => nil
+    (add-bit dot)             => {:word [[0]]}
     (add-bit (dec dat))       => {:word [[0 0]]}
     (add-bit dat)             => {:word [[0 0 1]]}
     (add-bit (dec threshold)) => {:word [[0 0 1 1]]}))
@@ -112,7 +112,7 @@
   (<= threshold d))
 
 (fact "beyond-threshold"
-  (beyond-threshold? dit) => false
+  (beyond-threshold? dot) => false
   (beyond-threshold? dat) => false
   (beyond-threshold? threshold) => true)
 
@@ -132,7 +132,7 @@
 (fact "morse-reading - new word"
   (binding [*state* (atom {:word [[]]})]
     (morse-reading HIGH threshold) => (contains {:word [[] []]})
-    (morse-reading HIGH (+ threshold dit)) => (contains {:word [[] [] [0]]})
+    (morse-reading HIGH (+ threshold dot)) => (contains {:word [[] [] [0]]})
     (morse-reading HIGH (+ threshold dat)) => (contains {:word [[] [] [0] [1]]})))
 
 (defmethod morse-reading [HIGH :same-word]
@@ -141,8 +141,8 @@
 
 (fact "morse-reading - same word"
   (binding [*state* (atom {:word [[]]})]
-    (morse-reading HIGH dit) => {:word [[0]]}
-    (morse-reading HIGH dit) => {:word [[0 0]]}
+    (morse-reading HIGH dot) => {:word [[0]]}
+    (morse-reading HIGH dot) => {:word [[0 0]]}
     (morse-reading HIGH dat) => {:word [[0 0 1]]}))
 
 (defmethod morse-reading [LOW :new-word]
