@@ -91,16 +91,16 @@
 
 (defn compute-bit "Given a duration, compute the bit as 0 or 1"
   [duration]
-  (cond (< duration dot)                  nil
-        (<= dot duration (dec dash))       0
-        (<= dash duration (dec threshold)) 1))
+  (cond (< duration dot)                              nil
+        (<= dot duration (dec dash))                  0
+        (<= dash duration (dec threshold-new-letter)) 1))
 
 (fact "compute-bit"
-  (compute-bit (dec dot))       => nil
-  (compute-bit dot)             => 0
-  (compute-bit (dec dash))      => 0
-  (compute-bit dash)            => 1
-  (compute-bit (dec threshold)) => 1)
+  (compute-bit (dec dot))                  => nil
+  (compute-bit dot)                        => 0
+  (compute-bit (dec dash))                 => 0
+  (compute-bit dash)                       => 1
+  (compute-bit (dec threshold-new-letter)) => 1)
 
 (defn add-bit
   "Update the state with the newly read signal."
@@ -112,11 +112,11 @@
 
 (fact "add-bit"
   (binding [*state* (atom {:word [[]]})]
-    (add-bit (dec dot))       => nil
-    (add-bit dot)             => {:word [[0]]}
-    (add-bit (dec dash))      => {:word [[0 0]]}
-    (add-bit dash)            => {:word [[0 0 1]]}
-    (add-bit (dec threshold)) => {:word [[0 0 1 1]]}))
+    (add-bit (dec dot))                  => nil
+    (add-bit dot)                        => {:word [[0]]}
+    (add-bit (dec dash))                 => {:word [[0 0]]}
+    (add-bit dash)                       => {:word [[0 0 1]]}
+    (add-bit (dec threshold-new-letter)) => {:word [[0 0 1 1]]}))
 
 (defn beyond-threshold? "Given a duration, compute if the threshold is reached or not."
   [d]
@@ -135,6 +135,8 @@
 
 ;; dispatch on the signal send by the button
 (defmulti morse-reading (fn [signal duration] [signal (beyond-threshold? duration)]))
+
+
 
 (defmethod morse-reading [HIGH :new-letter]
   [_ duration]
