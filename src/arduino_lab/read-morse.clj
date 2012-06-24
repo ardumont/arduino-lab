@@ -171,8 +171,8 @@
   (def device-board "/dev/ttyACM0")
   (System/setProperty "gnu.io.rxtx.SerialPorts" device-board)
   (def board (arduino :firmata device-board))
-  (enable-pin board :digital pin-button)
   board
+  (enable-pin board :digital pin-button)
   (pin-mode board pin-led OUTPUT)
   (pin-mode board pin-button INPUT)
 
