@@ -53,6 +53,14 @@
   (read-morse [0 0 0 0] [0] [0 1 0 0] [0 1 0 0] [1 1 1] [] [0 0 0] [1 1 1] [0 0 0]) => [\h \e \l \l \o nil \s \o \s]
   (read-morse [0 0 0 0 0]) => [nil])
 
+(defn read-morse-word "Reading the state at the keyword :word and translate it into seq of letter"
+  []
+  (map (partial apply read-morse) (:word @*state*)))
+
+(fact "read-morse-word"
+  (binding [*state* (atom {:word [[[0 0 0] [1 1 1] [0 0 0]] [[1 1 1] [0 0 0] [0 0 0]]]})]
+    (read-morse-word)) => [[\s \o \s] [\o \s \s]])
+
 (defn init-new-letter
   "Init the current state of the application"
   ([]
