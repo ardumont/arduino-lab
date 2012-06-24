@@ -16,10 +16,10 @@
 
 ;; duration of morse signal
 (def dot 50)
-(def dat (* 3 dot))
+(def dash (* 3 dot))
 
 ;; beyond this threshold, we get a new word
-(def threshold (* 2 dat))
+(def threshold (* 2 dash))
 
 ;; the state of the application to keep:
 ;; - the word that is been built
@@ -67,7 +67,7 @@
     (init-new-word :val) => (contains {:word [[:some-previous-val] [:val]]})))
 
 (defn read-morse-word
-  "Read the word from the global state and update the global list of words read"
+  "Read the word from the global state and updashe the global list of words read"
   []
   (let [bits (:word @*state*)]
     (apply read-morse bits)))
@@ -79,18 +79,18 @@
 (defn compute-bit "Given a duration, compute the bit as 0 or 1"
   [duration]
   (cond (< duration dot)                  nil
-        (<= dot duration (dec dat))       0
-        (<= dat duration (dec threshold)) 1))
+        (<= dot duration (dec dash))       0
+        (<= dash duration (dec threshold)) 1))
 
 (fact "compute-bit"
   (compute-bit (dec dot)) => nil
   (compute-bit dot) => 0
-  (compute-bit (dec dat)) => 0
-  (compute-bit dat) => 1
+  (compute-bit (dec dash)) => 0
+  (compute-bit dash) => 1
   (compute-bit (dec threshold)) => 1)
 
 (defn add-bit
-  "Update the state with the newly read signal."
+  "Updashe the state with the newly read signal."
   [duration]
   (if-let [signal (compute-bit duration)]
     (swap! *state* (fn [o]
@@ -101,8 +101,8 @@
   (binding [*state* (atom {:word [[]]})]
     (add-bit (dec dot))       => nil
     (add-bit dot)             => {:word [[0]]}
-    (add-bit (dec dat))       => {:word [[0 0]]}
-    (add-bit dat)             => {:word [[0 0 1]]}
+    (add-bit (dec dash))       => {:word [[0 0]]}
+    (add-bit dash)             => {:word [[0 0 1]]}
     (add-bit (dec threshold)) => {:word [[0 0 1 1]]}))
 
 (def morse-reading nil);; hack for the multi-method definition to be recomputed each time changes occur
@@ -113,7 +113,7 @@
 
 (fact "beyond-threshold"
   (beyond-threshold? dot) => false
-  (beyond-threshold? dat) => false
+  (beyond-threshold? dash) => false
   (beyond-threshold? threshold) => true)
 
 ;; dispatch on the signal send by the button
@@ -133,7 +133,7 @@
   (binding [*state* (atom {:word [[]]})]
     (morse-reading HIGH threshold) => (contains {:word [[] []]})
     (morse-reading HIGH (+ threshold dot)) => (contains {:word [[] [] [0]]})
-    (morse-reading HIGH (+ threshold dat)) => (contains {:word [[] [] [0] [1]]})))
+    (morse-reading HIGH (+ threshold dash)) => (contains {:word [[] [] [0] [1]]})))
 
 (defmethod morse-reading [HIGH :same-word]
   [_ duration]
@@ -143,7 +143,7 @@
   (binding [*state* (atom {:word [[]]})]
     (morse-reading HIGH dot) => {:word [[0]]}
     (morse-reading HIGH dot) => {:word [[0 0]]}
-    (morse-reading HIGH dat) => {:word [[0 0 1]]}))
+    (morse-reading HIGH dash) => {:word [[0 0 1]]}))
 
 (defmethod morse-reading [LOW :new-word]
   [_ _]
