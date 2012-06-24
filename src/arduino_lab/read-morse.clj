@@ -46,7 +46,8 @@
 (fact "read-morse"
   (read-morse [0 0 0] [1 1 1] [0 0 0]) => [\s \o \s]
   (read-morse [0 0 0 0] [0] [0 1 0 0] [0 1 0 0] [1 1 1]) => [\h \e \l \l \o]
-  (read-morse [0 0 0 0] [0] [0 1 0 0] [0 1 0 0] [1 1 1] [] [0 0 0] [1 1 1] [0 0 0]) => [\h \e \l \l \o nil \s \o \s])
+  (read-morse [0 0 0 0] [0] [0 1 0 0] [0 1 0 0] [1 1 1] [] [0 0 0] [1 1 1] [0 0 0]) => [\h \e \l \l \o nil \s \o \s]
+  (read-morse [0 0 0 0 0]) => [nil])
 
 (defn init-new-word
   "Init the current state of the application"
