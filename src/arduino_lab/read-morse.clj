@@ -64,6 +64,78 @@
                         {:time (System/currentTimeMillis)
                          :word (:word nw)})))))
 
+(fact "init-new-letter without init value"
+  (binding [*state* (atom {:word [[[:some-previous-val]]]})]
+    (init-new-letter) => (contains {:word [[[:some-previous-val] []]]})))
+
+(fact "init-new-letter with init value"
+  (binding [*state* (atom {:word [[[:some-previous-val]]]})]
+    (init-new-letter :val) => (contains {:word [[[:some-previous-val] [:val]]]})))
+
+(defn init-new-word
+  "Init the current state of the application"
+  ([]
+     (init-new-word nil))
+  ([n]
+     (swap! *state* (fn [o]
+                      {:time (System/currentTimeMillis)
+                       :word (conj (:word o) [(if n [n] [])])}))))
+
+(fact "init-new-letter without init value"
+  (binding [*state* (atom {:word [[[:some-previous-val]]]})]
+    (init-new-word) => (contains {:word [[[:some-previous-val]] [[]]]})))
+
+(fact "init-new-letter with init value"
+  (binding [*state* (atom {:word [[[:some-previous-val]]]})]
+    (init-new-word :val) => (contains {:word [[[:some-previous-val]] [[:val]]]})))
+
+(defn compute-bit "Given a duration, compute the bit as 0 or 1"
+  [duration]
+  (cond (< duration dot)                  nil
+        (<= dot duration (dec dash))       0
+        (<= dash duration (dec threshold)) 1))
+
+(fact "compute-bit"
+  (compute-bit (dec dot))       => nil
+  (compute-bit dot)             => 0
+  (compute-bit (dec dash))      => 0
+  (compute-bit dash)            => 1
+  (compute-bit (dec threshold)) => 1)
+
+(defn add-bit
+  "Update the state with the newly read signal."
+  [duration]
+  (if-let [signal (compute-bit duration)]
+    (swap! *state* (fn [o]
+                     (let [i (dec (count (:word o)))]
+                       (update-in o [:word i] conj signal))))))
+
+(fact "add-bit"
+  (binding [*state* (atom {:word [[]]})]
+    (add-bit (dec dot))       => nil
+    (add-bit dot)             => {:word [[0]]}
+    (add-bit (dec dash))      => {:word [[0 0]]}
+    (add-bit dash)            => {:word [[0 0 1]]}
+    (add-bit (dec threshold)) => {:word [[0 0 1 1]]}))
+
+(defn beyond-threshold? "Given a duration, compute if the threshold is reached or not."
+  [d]
+  (cond (< d threshold-new-letter) :same-letter
+        (< d threshold-new-word)   :new-letter
+        :else :new-word))
+
+(fact "beyond-threshold"
+  (beyond-threshold? dot)                  => :same-letter
+  (beyond-threshold? dash)                 => :same-letter
+  (beyond-threshold? threshold-new-letter) => :new-letter
+  (beyond-threshold? threshold-new-word)   => :new-word)
+
+;; hack for the multi-method definition to be recomputed each time chanes occur
+(def morse-reading nil)
+
+;; dispatch on the signal send by the button
+(defmulti morse-reading (fn [signal duration] [signal (beyond-threshold? duration)]))
+
 (defmethod morse-reading [HIGH :new-letter]
   [_ duration]
   (if-let [cs (compute-bit (- duration threshold-new-word))]
@@ -98,7 +170,7 @@
 (fact "morse-reading LOW :new-letter"
   (binding [*state* (atom {:word [[[1 1 1]]]})]
     (morse-reading LOW threshold-new-letter)         => (contains {:word [[[1 1 1] []]]})
-    (morse-reading LOW (+ threshold-new-letter dit)) => (contains {:word [[[1 1 1] [] []]]})))
+    (morse-reading LOW (+ threshold-new-letter dot)) => (contains {:word [[[1 1 1] [] []]]})))
 
 (defmethod morse-reading [LOW :new-word]
   [_ _]
