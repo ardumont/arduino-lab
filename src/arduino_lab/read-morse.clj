@@ -14,7 +14,7 @@
 (def pin-led    13)
 (def pin-button 7)
 
-;; duraction of morse signal
+;; duration of morse signal
 (def dit 50)
 (def dat (* 3 dit))
 
