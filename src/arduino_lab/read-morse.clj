@@ -26,7 +26,17 @@
 ;; - the last time  we added a bit
 (def ^:dynamic *state* (atom
                         {:time (System/currentTimeMillis) ;; the reading time
-                         :word []}))                      ;; the current word that is been read
+                         :word []}))                      ;; the letters that are been read
+
+(defn init-state "Initialize the state of the program"
+  []
+  (reset! *state* {:time (System/currentTimeMillis)
+                   :word []}))
+
+(fact
+  (binding [*state* (atom {:word [[0 0 0]]})]
+    (init-state) => (contains {:word []})
+    @*state*      => (contains {:word []})))
 
 (defn read-morse
   "Given a suite of bits, return the words"
