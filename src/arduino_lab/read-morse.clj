@@ -107,16 +107,17 @@
   [duration]
   (if-let [signal (compute-bit duration)]
     (swap! *state* (fn [o]
-                     (let [i (dec (count (:word o)))]
-                       (update-in o [:word i] conj signal))))))
+                     (let [i (dec (count (:word o)))
+                           j (dec (count (last (:word o))))]
+                       (update-in o [:word i j] conj signal))))))
 
 (fact "add-bit"
-  (binding [*state* (atom {:word [[]]})]
+  (binding [*state* (atom {:word [:some-previous-letter [[]]]})]
     (add-bit (dec dot))                  => nil
-    (add-bit dot)                        => {:word [[0]]}
-    (add-bit (dec dash))                 => {:word [[0 0]]}
-    (add-bit dash)                       => {:word [[0 0 1]]}
-    (add-bit (dec threshold-new-letter)) => {:word [[0 0 1 1]]}))
+    (add-bit dot)                        => {:word [:some-previous-letter [[0]]]}
+    (add-bit (dec dash))                 => {:word [:some-previous-letter [[0 0]]]}
+    (add-bit dash)                       => {:word [:some-previous-letter [[0 0 1]]]}
+    (add-bit (dec threshold-new-letter)) => {:word [:some-previous-letter [[0 0 1 1]]]}))
 
 (defn beyond-threshold? "Given a duration, compute if the threshold is reached or not."
   [d]
@@ -136,7 +137,15 @@
 ;; dispatch on the signal send by the button
 (defmulti morse-reading (fn [signal duration] [signal (beyond-threshold? duration)]))
 
+(defmethod morse-reading [HIGH :same-letter]
+  [_ duration]
+  (add-bit duration))
 
+(fact "morse-reading HIGH :same-letter"
+  (binding [*state* (atom {:word [[[]]]})]
+    (morse-reading HIGH dot) => (contains {:word [[[0]]]})
+    (morse-reading HIGH dot) => (contains {:word [[[0 0]]]})
+    (morse-reading HIGH dash) => (contains {:word [[[0 0 1]]]})))
 
 (defmethod morse-reading [HIGH :new-letter]
   [_ duration]
