@@ -9,7 +9,8 @@ Examples inspired from:
 ## Usage
 
 My personal usage.
-Could be an example on how to setup clodiuno as this was [[http://adumont.fr/blog/my-first-steps-with-arduinoclodiuno][kind of messy for me]]. This was worth it :D
+Could be an example on how to setup clodiuno as this was [kind of messy for me](http://adumont.fr/blog/my-first-steps-with-arduinoclodiuno).
+This was worth it though :D
 
 ## License
 
