@@ -45,7 +45,7 @@
     (close board)))
 
 (comment "For the repl"
-  (def board (arduino :firmata "/dev/ttyS42"))
+  (def board (arduino :firmata "/dev/ttyACM0"))
   (pin-mode board 13 OUTPUT)
   (digital-write board 13 HIGH)
   (digital-write board 13 LOW)
