@@ -14,6 +14,6 @@ This was worth it though :D
 
 ## License
 
-Copyright (C) 2012 commiters
+Copyright (C) 2012-2014 commiters
 
 Distributed under the Eclipse Public License, the same as Clojure.
